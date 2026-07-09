@@ -5,7 +5,6 @@ Runs entirely on your machine - no hosting required.
 
 ![DataQ dashboard screenshot](docs/screenshot.png)
 
-> _Screenshot placeholder - drop a PNG at `docs/screenshot.png` after the first run._
 
 ## Features
 
