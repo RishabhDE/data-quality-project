@@ -1,0 +1,9 @@
+{
+  "age": "int64",
+  "city": "object",
+  "customer_id": "int64",
+  "email": "object",
+  "name": "object",
+  "segment": "object",
+  "signup_date": "object"
+}
