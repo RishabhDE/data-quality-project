@@ -18,6 +18,31 @@ BASELINES_DIR = Path(__file__).resolve().parent.parent / "baselines"
 Issue = dict
 
 
+# Aliases so schemas saved under one pandas version still compare correctly
+# when read back on another. Pandas may label text columns as ``object``,
+# ``str``, ``string``, ``string[python]``, or ``string[pyarrow]`` depending
+# on version and options; they are all "string-y" for our purposes.
+_DTYPE_ALIASES: dict[str, str] = {
+    "object": "string",
+    "str": "string",
+    "string": "string",
+    "string[python]": "string",
+    "string[pyarrow]": "string",
+}
+
+
+def _normalize_dtype(dtype_str: str) -> str:
+    """Collapse equivalent dtype spellings to a canonical form."""
+    key = dtype_str.strip().lower()
+    if key in _DTYPE_ALIASES:
+        return _DTYPE_ALIASES[key]
+    # Also collapse pyarrow-backed variants like "string[pyarrow]" that
+    # arrive with mixed case.
+    if key.startswith("string["):
+        return "string"
+    return dtype_str
+
+
 def _schema_from_df(df: pd.DataFrame) -> dict[str, str]:
     return {str(col): str(dtype) for col, dtype in df.dtypes.items()}
 
@@ -109,7 +134,7 @@ def detect_drift(df: pd.DataFrame, name: str) -> list[Issue]:
         )
 
     for col in baseline.keys() & current.keys():
-        if baseline[col] != current[col]:
+        if _normalize_dtype(baseline[col]) != _normalize_dtype(current[col]):
             issues.append(
                 {
                     "check": "schema.dtype_changed",
